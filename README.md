@@ -1,5 +1,3 @@
-# Intro to Programming with R
-
 This repository contains all the material used to teach an intro to programming with R course I taught at UCLA Summer 2022.
 
 The following are sources used to construct the lesson plans:
