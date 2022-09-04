@@ -1,5 +1,7 @@
-# Intro-to-Programming-with-R
-Material used to teach an intro to programming with R course
+# Intro to Programming with R
+
+This repository contains all the material used to teach an intro to programming with R course.
+
 The following are sources used to construct the lesson plans:
   1. Wickham, H. and Grolemund, G. "R for Data Science". https://r4ds.had.co.nz/introduction.html
   2. Irizarry, R.A. 2020. "Introduction to Data Science: Data Analysis and Prediction Algorithms with R." https://rafalab.github.io/dsbook/
