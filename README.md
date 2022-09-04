@@ -1,4 +1,4 @@
-This repository contains all the material used to teach an intro to programming with R course I taught at UCLA Summer 2022.
+This repository contains all the material used to teach an intro to programming with R Summer course I taught at UCLA.
 
 The following are sources used to construct the lesson plans:
   1. Wickham, H. and Grolemund, G. "R for Data Science". https://r4ds.had.co.nz/introduction.html
