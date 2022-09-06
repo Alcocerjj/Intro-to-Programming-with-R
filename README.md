@@ -1,4 +1,4 @@
-This repository contains all the material used to teach an intro to programming with R Summer course I taught at UCLA.
+This repository contains all the material used to teach an intro to programming with R Summer course I taught at UCLA. The dataset folder contains all datasets used for the course, with the exception of the tweets dataset, as Twitter policy does not allow tweets to be distributed. 
 
 The following are the sources I used to construct the lesson plans:
   1. Barberá, P. 2021. USC POIR 613 - Computational Social Science Course.
