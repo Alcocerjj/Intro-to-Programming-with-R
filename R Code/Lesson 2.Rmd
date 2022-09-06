@@ -1,0 +1,236 @@
+---
+title: "Lesson 2"
+author: "Jose Alcocer"
+output: html_document
+---
+
+## 2.0 Programming Basics in R
+
+For this section of the lecture, we will be discussing some more complex programming calculations, these being: conditional statements, for-loops, and functions. At the end, we will see how to combine these and perform much larger operations.
+
+## 2.1 Conditional Expressions
+  
+Conditional expressions are one of many basic features of programming. The most common conditional expression is the if-else statement. 
+
+Here is a simple chunk showing the general structure of an if-else statement. The basic idea is to print the reciprocal of x unless x is 0
+
+```{r}
+x <- 0
+
+if(x!=0){  # if x does not equal to 0
+  print(1/x)  
+} else{       
+  print("No reciprocal for 0.")
+}
+```
+
+Here is another example with a more realistic dataset. This dataset is originally from the National Institute of Diabetes and Digestive and Kidney Diseases. The objective of the dataset is to diagnostically predict whether or not a patient has diabetes, based on certain diagnostic measurements included in the dataset. Several constraints were placed on the selection of these instances from a larger database. In particular, all patients here are females at least 21 years old of Pima Indian heritage.
+
+_Source: Smith, J.W., Everhart, J.E., Dickson, W.C., Knowler, W.C., & Johannes, R.S. (1988). Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. In Proceedings of the Symposium on Computer Applications and Medical Care (pp. 261--265). IEEE Computer Society Press_
+
+```{r}
+# In order to read csv files, we need to install a package that allows to do this
+
+# install.packages("readr") # This command installs package necessary to read csv files 
+
+library(readr) # calls forth the package from library to execute command
+
+# You must set your working directory, which is a folder that will contain all your files and datasets when programming. The following command is how to set your working directory using my machine as an example
+setwd("/Volumes/GoogleDrive-115381348121898517757/My Drive/All School Files/USC PHD/Files/Non-Class Material/UCLA Summer Course - Intro to Data Science/Datasets")
+
+# Now with your working directory set, you use the following command to tell R to import a file of interest, as it knows where to find it
+diabetes <- read_csv("diabetes.csv") # This function creates an object holding dataset from csv file
+
+age <- min(diabetes$Age) # We are creating an object holding minimum age of women in dataset
+
+if(age > 21){
+  print(age) 
+} else{
+  print("No woman has age that low")
+}
+```
+ 
+We change the age to max to see what comes up next
+
+```{r}
+age <- max(diabetes$Age) # creating object holding max age of women in dataset
+
+if(age > 21){
+  print(age) 
+} else{
+  print("No woman has age that low")
+}
+```
+
+A related but more powerful function is the ifelse. This function takes three arguments: a logical and two possible answers. If the logical is TRUE, the value in the second argument is returned and if FALSE, the value in the third argument is returned.
+
+```{r}
+# basic example
+x <- 0
+ifelse(x > 0, 1/x, NA)
+
+# using last chunk's example
+age <- min(diabetes$Age) 
+
+ifelse(age > 21, age,"No woman has age that low")
+
+```
+
+## 2.2 For-loops
+
+For-loops allows us to compute repeated functions without having to repeatedly write the same code (e.g., writing print statements 25 times for each increasing number of 1 to 25). The simplest example of a for-loop consists of the following
+
+```{r}
+for(i in 1:25){
+  print(i)
+}
+```
+
+Because for-loops iterate over objects, it is also possible to loop through vectors of character strings, such as the example below
+
+```{r}
+fruits <- c("Apple", "Orange", "Mango", "Pineapple", "Strawberry") # Creating character vector
+
+for(i in fruits) {  # Here, we will loop over our character vector
+  
+  print(paste("The fruit", i, "consists of", nchar(i), "characters.")) 
+}
+# The print function simply prints out what we tell it to on our console
+```
+
+Not only can we do this, but we can use for-loops to store outputs into vectors as well. The following example will do just that
+
+```{r}
+object <- numeric() # We are creating an empty numeric object 
+
+for(i in 1:10) {   # Head of for-loop
+ 
+  object <- c(object, i^2) # Code block telling R to calculate each value (1:10) to the power of 2
+}
+
+print(object) # Printing results 
+```
+
+## 2.2.1 Nested For-Loops
+
+Like a for-loop, nested for-loops are loops within a loop, where an inner loop is found within the body of outer one. The first pass of the outer loop triggers the inner loop, causing the computer to execute the instructions of the nested for-loop to completion. The following chunk of code demonstrates how this works.
+
+```{r}
+Alphabet <- character() # Creating an empty character object
+
+for(i in 1:5) {             # Head of first for-loop
+ 
+  for(j in 1:2) {           # Head of nested for-loop
+ 
+    Alphabet <- c(Alphabet, paste(LETTERS[i], letters[j], sep = ""))  # Code block
+  }
+}
+# R has integrated dictionaries, like the alphabet, and can be easily accessed by typing out "LETTERS" for uppercase and "letters" for lowercase
+
+Alphabet # Seeing the results
+```
+
+## 2.2.2 Combining Conditional Statements with For-Loops
+
+You can use a combination of conditional statements (e.g., if...else) to break a for-loop. The following chunk of code shows just how to do that. We will write code that stops a for-loop when our if-condition of "i" being greater than or equal to "10" is met.
+
+```{r}
+for(i in 1:20) {    # Head of for-loop
+ 
+  x <- i^2         # Code block
+  print(x)         # Print results
+ 
+  if(i >= 10) {      # Conditionally stop for-loop
+ 
+    break           # Using break-statement
+  }
+}
+```
+
+As you can see based on the previous output of the RStudio console, our for-loop was stopped when the index i was equal to 10.
+
+## 2.2.3. Using For-Loops with DataFrames
+
+For-loops do not always have to be used to create objects, you can use them on existing objects, such as data frames. Using the Diabetes dataset from earlier, we will create a new variable that converts Skin Thickness from the current measure of millimeters to centimeters. 
+
+```{r}
+for(i in 1:nrow(diabetes)) {  # "nrow" tells us total number of rows for object
+    
+    diabetes$SkinThicknessCM[i] <- diabetes$SkinThickness[i] * 0.1  # creating new variable
+  }
+```
+
+# 2.2.4 While Loops
+
+Another form of loop is a while loop. While loops, unlike for-loops, start with a condition that decides whether the loop should keep running. The condition then tells R to run the loop until that conditional argument is met. The code below illustrates this with an example. 
+
+```{r}
+object <- 40
+
+while(object < 50){
+  
+  object <- object + 1
+  print(object)
+}
+```
+
+Here, we wanted to run a while-loop as long as the object of our creation remained smaller than 50. Once that value was met, the loop broke.
+
+## 2.3 Functions
+
+Functions allow us to perform repeated operations in a much easier manner. Using the example of computing averages, we can write a function that computes the average of a vector. There already exists a function (mean) in base R but you can see how it works below
+
+```{r}
+average <- function(x){
+  s <- sum(x) # computes sum of x
+  n <- length(x) # produces total length of vector
+  s/n
+}
+
+x <- 1:1000 # sequence of 1 to 1000
+average(x)
+```
+
+Using a more complex example, we create a randomly generated dataset that resembles a large-scale survey dataset with 100,000 respondents, who self-reported whether they are vaccinated for COVID-19 along with their age. 
+
+```{r}
+n <- 100000 # store an object with integer of 100,000 
+
+set.seed(444) # sets a pseudo-random generated environment where R holds constant the randomly generated numbers 
+
+# create dataframe
+d <- data.frame(id = 1:n ,
+                vaccinated = sample(c("vaccinated", "did not vaccinate"), size = n, replace=TRUE),
+                age = sample(18:100, size=n, replace=TRUE)
+)
+
+# What we did above was create a dataset that generated IDs for respondents, created a sample of observations that either vaccinated or did not of the same size of our object n, and created a sample of observations with number 18-100 that is of the same size as our object n
+```
+
+We will see how a function can help us answer the following question: how many people out of the 100,000 were vaccinated?
+
+```{r}
+function2 <- function(){
+  vaccine <- ifelse(d$vaccinated=="vaccinated", 1,0)
+  return(sum(vaccine))
+}
+function2() # allows us to see the answer
+
+```
+
+
+## 2.4 Activity 
+
+The following activity will test the culmination of topics covered in this lesson. 
+
+  1. Use a for-loop to create an object that includes all uppercase and lowercase letters of the alphabet        in a vector.
+```{r}
+
+```
+  
+  2. Create a function that converts Fahrenheit temperature to Celsius. The formula for converting               Fahrenheit to Celsius is **(x - 32) * 5/9**
+  
+```{r}
+
+```
+

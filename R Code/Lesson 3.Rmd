@@ -1,0 +1,213 @@
+---
+title: "Lesson 3"
+author: "Jose Alcocer"
+output: html_document
+---
+
+## 3.0 Exploring the Tidyverse 
+
+The tidyverse package is a very popular and important package within R. Loading it onto your environment grants you the ability to work with "tidy" data and allows you a higher ease of manipulating dataframes that fall under this data format. Tidy data is any data frame or table where each row represents one observation and each column represents a different variable available for each observation (almost every data frame we have created up to this point counts as a tidy data frame). There are many datasets out there that are not in tidy format and it is there when you must reshape it to tidy in order to be able to manipulate it (we will cover how to do that in later lessons). 
+
+Some examples of non tidy data are found below
+
+```{r}
+data("co2")
+head(co2)
+data("BOD")
+head(BOD)
+```
+
+This section will cover some of the base functions found within the tidyverse package, these being the mutate, filter, and select functions.
+
+## 3.1 Mutating (adding columns)
+
+The function mutate allows us to add additional columns without having to run much syntax. The way that the command works is that it take the data frame we want as the first argument, and the name and values of the new variable as a second argument using the "name = values" format. We will practice adding a new variable to the data set below.
+
+```{r}
+# install.packages("tidyverse")
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(purrr)
+
+# import data set from previous lesson
+setwd("/Volumes/GoogleDrive-115381348121898517757/My Drive/All School Files/USC PHD/Files/Non-Class Material/UCLA Summer Course - Intro to Data Science/Datasets")
+
+diabetes <- read_csv("diabetes.csv")
+
+# creating a new variable called "geriatric" using an ifelse function
+diabetes_v2 <- mutate(diabetes, geriatric = ifelse(Age > 35, 1,0))
+
+# Traditional way of adding a variable to the dataset 
+diabetes$geriatric <- ifelse(diabetes$Age > 35, 1,0)
+
+```
+
+
+## 3.2 Filtering through data
+
+Suppose that we want to filter the data table to only show the entries for which the BMI is higher than 23. To do this we use the filter function, which takes the data table as the first argument and then the conditional statement as the second. Like mutate, we can use the unquoted variable names from Diabetes inside the function and it will know we mean the columns and not objects in the workspace.
+
+```{r}
+# filtering through BMI
+filter(diabetes, BMI >= 23)
+
+BMI <- filter(diabetes, BMI >= 23)
+```
+
+
+## 3.3 Selecting specific data variables
+
+Although our data table only has 9 columns, some data tables include hundreds. If we want to view just a few, we can use the dplyr select function. In the code below we select three columns, assign this to a new object and then filter the new object
+
+```{r}
+new_diabetes <- select(diabetes, Age, BMI, Glucose)
+filter(new_diabetes, BMI >=23)
+
+
+# if we want to sort through this new dataset by Age where we get the youngest to oldest, this is what we do 
+
+new_diabetes |> 
+  arrange(Age) |>
+  tail()
+
+# if you want descending order of Age
+new_diabetes |> 
+  arrange(desc(Age)) |>
+  head()
+
+# if we want to group by a specific variable, in this case, geriatric, we can do the following
+
+diabetes_v2 |> group_by(geriatric)
+
+
+# special kind of ifelse that works with tidyverse. This case allows us to create or define categorical variables that we may have within our dataset
+
+x <- c(-2,-1,0,1,2)
+case_when(x < 0 ~ "Negative",
+          x > 0 ~ "Positive",
+          TRUE ~ "Zero")
+```
+
+## 4.0 Plots and Visualization
+
+The following section will be taught a little differently. The code chunks will be provided and you will follow along and program with me throughout the activities as I explain what each function does.
+
+```{r}
+library(dplyr)
+library(ggplot2) # we will install both packages necessary to begin plotting
+
+ggplot(data = diabetes)
+
+# install.packages("datasets")
+library(datasets)
+data("mtcars")
+head(mtcars)
+
+# one dimensional plot is one where you plot one single variable at a time
+boxplot(mtcars$mpg, col= "green")
+hist(mtcars$mpg, col = "green", breaks = 25)  ## Plot 2
+hist(mtcars$mpg, col = "green", breaks = 50)  ## Plot 3
+barplot(table(mtcars$carb), col="grey")
+
+# Two dimensional plots
+boxplot(mpg~wt, data=mtcars, col = "grey")
+hist(subset(mtcars, cyl == 4)$mpg, col = "green") 
+with(mtcars, plot(wt, mpg))
+
+# Using the plot function in r 
+plot(3, 4)
+
+plot(c(1, 3, 4), c(4, 5 , 8))
+
+plot(1:20)
+
+# Values for x and y axis
+x <- 1:5; y = x * x
+ 
+# Using plot() function
+plot(x, y, type = "l") # l stands for line
+plot(x, y, type = "h") # h stands for histogram
+
+# R program to plot a graph
+ 
+# Creating x and y-values
+x - 1:5; y = x * x
+ 
+# Using plot function
+plot(x, y, type = "b")
+plot(x, y, type = "s")
+plot(x, y, type = "p")
+
+```
+
+The following chunks of code is an example of just how one can use the culmination of conditional statements and lists to create beautiful plots. Credits to https://towardsdatascience.com/christmas-cards-81e7e1cce21c for showcasing this code. 
+
+```{r}
+# install.packages("plotly")
+library(plotly)
+
+set.seed(24)
+
+n_tree <- 1000
+n_ornaments <- 20
+n_lights <- 300
+
+# Generate spiral data points
+x <- c()
+y <- c()
+z <- c()
+
+for (i in 1:n_tree) {
+    r <- i / 30
+    x <- c(x, r * cos(i / 30))
+    y <- c(y, r * sin(i / 30))
+    z <- c(z, n_tree - i)
+}
+
+tree <- data.frame(x, y, z)
+
+# Sample for ornaments:
+#   - sample n_ornaments points from the tree spiral
+#   - modify z so that the ornaments are below the line
+#   - color column: optional, add if you want to add color range to ornaments
+ornaments <- tree[sample(nrow(tree), n_ornaments), ]
+ornaments$z <- ornaments$z - 50
+ornaments$color <- 1:nrow(ornaments)
+
+# Sample for lights:
+#   - sample n_lights points from the tree spiral
+#   - Add normal noise to z so the lights spread out
+lights <- tree[sample(nrow(tree), n_lights), ]
+lights$x <- lights$x + rnorm(n_lights, 0, 20)
+lights$y <- lights$y + rnorm(n_lights, 0, 20)
+lights$z <- lights$z + rnorm(n_lights, 0, 20)
+
+# hide axes
+ax <- list(
+    title = "",
+    zeroline = FALSE,
+    showline = FALSE,
+    showticklabels = FALSE,
+    showgrid = FALSE
+)
+
+plot_ly() %>%
+    add_trace(data = tree, x = ~x, y = ~y, z = ~z,
+              type = "scatter3d", mode = "lines",
+              line = list(color = "#1A8017", width = 7)) %>%
+    add_markers(data = ornaments, x = ~x, y = ~y, z = ~z,
+                type = "scatter3d",
+                marker = list(color = ~color,
+                              colorscale = list(c(0,'#EA4630'), c(1,'#CF140D')),
+                              size = 15)) %>%
+    add_markers(data = lights, x = ~x, y = ~y, z = ~z,
+                type = "scatter3d",
+                marker = list(color = "#FDBA1C", size = 3, opacity = 0.8)) %>%
+    layout(scene = list(xaxis=ax, yaxis=ax, zaxis=ax), showlegend = FALSE)
+
+```
+
+
+
+

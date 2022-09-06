@@ -1,0 +1,188 @@
+---
+title: "Lesson 5"
+author: "Jose Alcocer"
+date: '2022-07-11'
+output: html_document
+---
+
+The last lesson focused on general plot building, but this one will focus entirely on building plots using the ggplot2 package. This package breaks plots into components that allows beginners to create complex and aesthetically pleasing plots. The ggplot2 package works directly with tidy format data (where rows are observations and columns are variables). In order to help with coding for these plots, I have attached with this lesson the ggplot2 cheat sheet to help with the coding. 
+
+The first step in understanding how ggplot2 is to understand the components of a plot. A plot consists of the following:
+
+  1. Data - The observations that a plot presents
+  2. Geometry - The kind of plot you are creating (e.g., scatterplot, barplot, histogram, smooth densities,qqplot, and boxplot)
+  3. Aesthetic mapping - visual cues used to represent information in a plot (e.g., point positions on the x and y axis of the plot)
+  
+## 5.1 Data
+  
+The following set of code demonstrates the process of building a plot piece by piece. In this first step, we utilize the function ggplot to initialize the graph. What we are doing here is telling R to create a plot using the data "diabetes"
+
+```{r}
+library(readr)
+library(ggplot2)
+
+setwd("/Volumes/GoogleDrive-115381348121898517757/My Drive/All School Files/USC PHD/Files/Non-Class Material/UCLA Summer Course - Intro to Data Science/Datasets")
+
+diabetes <- read_csv("diabetes.csv")
+
+ggplot(data=diabetes)
+```
+
+As we can see, this command creates a blank slate since no geometry or aesthetic mapping were defined. As a result, we only see a grey background. Like all other objects we create, we can assign our plot to an object by simply inserting into one with the code below. Like other objects, we can render what is inside by simple running the line of code for its creation. Like above, because we are not assigning the last two components, we get a simple grey background
+
+```{r}
+plot <- ggplot(data=diabetes)
+plot
+```
+
+## 5.2 Geometry
+
+The concept of plotting with ggplot2 involves adding layers by coding additional syntax to the data component of a plot. When defining the data, we follow up with code that defines the geometry of a plot. In other words, we tell R what kind of plot we want to produce that will represent our data. For this example, we will make a scatterplot. Using the cheat sheet and Google's help, we are able to see that the command would be **geom_point**. Others can range but are not limited to: _geom_bar_ and _geom_histogram_. In order to run **geom_point** properly, we must provide data and aesthetic mapping. The following section will cover mapping
+
+## 5.3 Aesthetic Mappings
+
+Aesthetic mappings describe how properties of the data connect with features of the graph, such as distance along an axis, size, or color. The aes function connects data with what we see on the graph by defining aesthetic mappings and will be one of the functions you use most often when plotting. The outcome of the aes function is often used as the argument of a geometry function. This example produces a scatterplot of Glucose versus Blood Pressure
+
+```{r}
+diabetes |> ggplot() +
+  geom_point(aes(x = BMI, y = Glucose))
+
+# We can drop the x = and y = if we wanted to since these are the first and second expected arguments
+
+diabetes |> ggplot() +
+  geom_point(aes(BMI, Glucose))
+
+# Instead of defining our plot from scratch, we can also add a layer to the plot object that was defined above 
+
+plot + geom_point(aes(BMI, Glucose))
+```
+
+## 5.4 Adding Layers to Our Plot
+
+For the sake of this example, let's say we want to add a second layer to the plot by labeling each point to identify each observation's age. Both the **geom_label** and **geom_text** can allow us to add text to our plot. We can do this with the following set of code
+
+```{r}
+plot + geom_point(aes(BMI, Glucose)) +
+  geom_text(aes(BMI, Glucose, label = Age))
+```
+
+While unpractical in this scenario, we can see how this code allows us to see the age of each observation. There are instances where adding labels can be quite helpful, such as when we are working with specific categories of data that need to be distinguished visually. 
+
+## 5.5 Messing with Arguments
+
+Each geometry function has many arguments other than _aes_ and data. They tend to be specific to the function. For example, in the plot we wish to make, the points are larger than the default size. In the help file we see that size is an aesthetic and we can change it like this
+
+```{r}
+plot + geom_point(aes(BMI, Glucose), size = 0.9) +
+  geom_text(aes(BMI, Glucose, label = Age), size = 3)
+```
+
+Now because the points are close to the labels, it is difficult to distinguish either. If we read the help file for geom_text, we see the nudge_x argument, which moves the text slightly to the right or to the left
+
+```{r}
+plot + geom_point(aes(BMI, Glucose), size = 1) +
+  geom_text(aes(BMI, Glucose, label = Age), size = 2, nudge_x = 1.8)
+```
+
+## 5.6 Adding Labels and Colors
+
+Using the cheat sheet and Google quickly reveals that to change labels and add a title, we use the following functions. For the sake of simplicity, we removed the labels to see the plot more clearly
+
+```{r}
+plot + geom_point(aes(BMI, Glucose), size = 1) +
+  xlab("Body Mass Index Measure") + 
+  ylab("Glucose Measure") +
+  ggtitle("BMI's Effect on Glucose Levels")
+```
+
+We can change the color of the points using the **col** argument in the **geom_point** function
+
+```{r}
+plot + geom_point(aes(BMI, Glucose), size = 1, color = "blue") +
+  xlab("Body Mass Index Measure") + 
+  ylab("Glucose Measure") +
+  ggtitle("BMI's Effect on Glucose Levels")
+
+```
+
+Let's say we wanted to add color depending on a category of the dataset. Following the example of our previous lesson, let's create the category of _geriatric_ again to separate the observations by age
+
+```{r}
+# Creating geriatric variable 
+diabetes$Geriatric <- ifelse(diabetes$Age > 35, "Yes","No")
+diabetes$Geriatric <- as.factor(diabetes$Geriatric)
+
+# seeing if it successfuly converted to a factor
+class(diabetes$Geriatric)
+
+
+# Plotting and changing color by category 
+plot <- diabetes |> ggplot(aes(BMI, Glucose), size = 1) + 
+  geom_point(aes(color = Geriatric), size = 1) + 
+  xlab("Body Mass Index Measure") + 
+  ylab("Glucose Measure") +
+  ggtitle("BMI's Effect on Glucose Levels")
+
+plot
+
+```
+
+## 5.7 Adding Themes to Plots
+
+Ggplot2 is enhanced further due to the availability of add-on packages. The remaining changes needed to put the finishing touches on our plot require the ggthemes package.The style of a ggplot2 graph can be changed using the theme functions. Several themes are included as part of the ggplot2 package in addition to the ggthemes one. Below are just a few examples.
+
+```{r}
+# install.packages("ggthemes")
+library(ggthemes)
+
+plot + theme_fivethirtyeight()
+
+plot + theme_economist()
+
+plot + theme_gray()
+
+plot + theme_bw()
+
+plot + theme_void()
+
+plot + theme_minimal()
+```
+
+The following chunks of code is another examples of just how one can use the ggplot2 package to create beautiful plots. Credits to https://towardsdatascience.com/christmas-cards-81e7e1cce21c for showcasing this code. 
+
+```{r}
+library(ggplot2)
+
+# Create data frame for a n-level christmas tree
+#   - specify 2*n bars (but have only n unique values)
+#   - set divergence values (values at the same level should differ only in the sign)
+#   - set labels for different parts of the tree
+df <- data.frame("wish" = c("YS",  "YS", "IDA", "IDA", "HOL", "HOL",
+                            "PY", "PY", "HAP", "HAP"),
+                 "pos" = c(0.75, -0.75, 3.5, -3.5, 2.5, -2.5,
+                           1.5, -1.5, 0.3, -0.3),
+                 "part" = c(rep("bottom", 2), rep("tree", 6), rep("star", 2)))
+
+# Convert wish to factor, specify levels to have the right order
+df$wish <- factor(df$wish, levels = c("YS", "IDA", "HOL", "PY", "HAP"))
+
+ggplot(df, aes(x = wish, y = pos, fill = part)) + geom_bar(stat="identity") +
+    coord_flip() +
+    theme_minimal() +
+    ylim(-5, 5) +
+    theme(legend.position = "none",
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank()) +
+    scale_fill_manual(values = c("#643413", "#FDBA1C", "#1A8017")) +
+    geom_point(aes(x=3.7, y=0.5), colour="#CF140D", size=12) +
+    geom_point(aes(x=2.5, y=-1), colour="#393762", size=12) +
+    geom_point(aes(x=1.7, y=1.5), colour="#CF140D", size=12) +
+    geom_point(aes(x=2.8, y=2.5), colour="#393762", size=12) +
+    geom_point(aes(x=1.8, y=-2.8), colour="#CF140D", size=12)
+```
+
+
+
+
+
