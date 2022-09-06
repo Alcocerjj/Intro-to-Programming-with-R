@@ -1,0 +1,372 @@
+---
+title: "Lesson 5"
+author: "Jose Alcocer"
+output: html_document
+---
+
+## 5.0 Data Wrangling + Text Analysis
+
+Very rarely in data science, data is easily available as part of a package or download. Much more typical is for the data to be in a file, a database, or extracted from a document, including web pages, tweets, or PDFs. In these cases, the first step is to import the data into R and, when using the tidyverse package, _tidy_ the data. This initial step in the data analysis process usually involves a lot of steps to convert the obtained data from its raw form to the _tidy_ form that greatly facilitates the rest of the analysis. The entirety of this process can be referred to as data wrangling. This lesson will therefore focus on conducting some of these steps. The latter part of the lesson will briefly introduce text analysis and how it is possible to use R to analyses multiple strings of data. 
+
+## 5.1 Reshaping Data
+
+The following code prepares the environment necessary to learn how to reshape a dataset 
+
+```{r}
+# Download required packages
+# install.packages("dslabs")
+library(tidyverse) 
+library(dslabs)
+
+# Creating object that extracts the example dataset we will use
+path <- system.file("extdata", package="dslabs")
+filename <- file.path(path, "fertility-two-countries-example.csv")
+wide_data <- read_csv(filename)
+
+# Looking at the data
+wide_data
+```
+
+One of the most used functions in the tidyr package is **pivot_longer**, which is useful for converting wide data into tidy data. The **pivot_longer** function’s first argument is the data frame that will be converted. Here we want to reshape the wide_data dataset so that each row represents a fertility observation, which implies we need three columns to store the year, country, and the observed value. In its current form, data from different years are in different columns with the year values stored in the column names. Through the **names_to** and **values_to** argument, we will tell **pivot_longer** the column names we want to assign to the columns containing the current column names and observations, respectively. The code to do this will look like the following
+
+```{r}
+data <- pivot_longer(wide_data, `1960`:`2015`, names_to = "year", values_to = "fertility")
+
+# Looking at the new data, we can see how it has been reformatted to tidy format
+head(data)
+```
+
+If we were to try to plot this data using ggplot, we would see that it is not fully successful as our new data frame has the years sorted out as characters of text. It is important to check the data classes of a dataset that is being wrangled in order to ensure that it is classified correctly. If it is not, then you can do something about it to correct it
+
+```{r}
+# Checking data types for all variables in data set 
+class(data$year) # gives us character = not good
+class(data$country) # gives us character = good
+class(data$fertility) # gives us numeric = good 
+```
+
+In order to correct the year variable, we can convert character strings into integers with the following code 
+
+```{r}
+# converting variable into integer type
+data$year <- as.integer(data$year)
+
+# verifying
+class(data$year)
+```
+
+Once we did this, then we can proceed to plot the data successfully
+
+```{r}
+data |> ggplot(aes(year, fertility, color = country)) + 
+  geom_point()
+```
+
+If we want to turn tidy data into wide format (sometimes we may want to actually do this), then we can use the **pivot_wider** function. This function does the inverse of the **pivot_longer** one
+
+```{r}
+wide_data <- data |>
+  pivot_wider(names_from = year, values_from = fertility)
+select(wide_data, country, `1960`:`1967`)
+```
+
+The following example will deal with the same dataset formatted in a way that is very unpractical and often realistic. Here, we will have to separate the data so that it becomes optimally stored
+
+```{r}
+path <- system.file("extdata", package = "dslabs")
+
+filename <- "life-expectancy-and-fertility-two-countries-example.csv"
+filename <-  file.path(path, filename)
+
+raw_dat <- read_csv(filename)
+select(raw_dat, 1:5)
+
+```
+
+As you can see, the columns have the variable names and are placed in a very awkward direction that it would be difficult to analyze effectively
+
+```{r}
+# converting wide data into tidy format 
+data <- raw_dat |> pivot_longer(-country)
+head(data)
+
+# we can see that the name variable has both a year and type of value
+# the following code can be used to correctly separate both names from that name variable into two separate ones
+
+newer_data <- data |> separate(name, c("year", "name"), extra = "merge")
+```
+
+Now, we need to create a column for each variable. As we learned, the **pivot_wider** function can do this 
+
+```{r}
+# running the same line of code above but altogether with the pivot_wider function
+newer_data <- data |>
+  separate(name, c("year", "name"), extra = "merge") |>
+  pivot_wider()
+```
+
+## 5.2 Combining Datasets and Tables
+
+The next part of the lesson will teach you how to join datasets together, as sometimes you may find multiple datasets containing information that is useful for your analysis. In the next example, we look at the relationship between population size for states in the USA and electoral votes. THe following set of code is meant to illustrate how to do this
+
+```{r}
+# Importing packages needed for this example
+library(tidyverse)
+library(dslabs)
+library(ggplot2)
+
+# The following data has population count per state and electoral votes, which is what we need
+data(murders)
+head(murders)
+
+data(polls_us_election_2016)
+head(results_us_election_2016)
+```
+
+The next chunk of code allows us to combine both tables according to States
+
+```{r}
+table <- left_join(murders, results_us_election_2016, by = "state") |> # joining dataset by State
+  select(-others) |> rename(ev = electoral_votes) # removing others from dataset and renaming variable
+head(table)
+```
+
+Now that we have successfully joined the data, we could use ggplot to show the relationship visually using the following code
+
+```{r}
+# install.packages("ggrepel")
+library(ggrepel)
+table |> ggplot(aes(population/10^6, ev, label = abb)) +
+  geom_point() +
+  geom_text_repel() + 
+  scale_x_continuous(trans = "log2") +
+  scale_y_continuous(trans = "log2") +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+There are more specific commands that can be used to combine data that is even more impractical. The link at the bottom of this document takes you to an online resource that shows you how to bind them if you want to learn more about them
+
+## 5.3 Web Scraping
+
+Sometimes, the data you are interested in obtaining is not spreadsheet ready, but rather on the web. It is here where we need to engage in web scraping. Web scraping can be defined as the process of extracting data from a website. Because information is always rendered as text (HTML), it is able to be extracted and processed into something clean and ready for analysis. The **rvest** package from **tidyverse** allows us to do just that. In the next chunk of code, we store an webpage from the Wikipedia website that contains a table we will extract.
+
+```{r}
+# loading packages required for this activity
+library(tidyverse)
+library(rvest)
+
+# creating url object
+url <- paste0("https://en.wikipedia.org/wiki/List_of_the_largest_fast_food_restaurant_chains")
+
+# creating another object that read html 
+h <- read_html(url)
+
+# seeing what data type this object is now 
+class(h) # says it is xml_document
+```
+
+We are able to see the html code that makes the webpage using the following command
+
+```{r}
+html_text(h)
+```
+
+Different parts of an HTML document are usually defined with a message in between < and >. These are called nodes. The **rvest** package includes functions to extract nodes of an HTML document: **html_nodes** extracts all nodes of different types and **html_node** extracts the first one. To extract the tables from the html code, we can use the following chunk
+
+```{r}
+web_table <- h |> html_nodes("table")
+
+web_table # as we can see, there is one table that r was able to scrape
+
+# in this case, we are interested in the third table that R scraped
+web_table[[3]]
+```
+
+The next command allows us to use the **rvest** package to convert HTML tables into data frames for us
+
+```{r}
+# storing an object where we convert the second html table into a dataset 
+web_table <- web_table[[3]] %>% html_table
+
+web_table
+```
+
+Now that we have a working table, we can do the finishing touches by changing the column names, and dropping an empty variable
+
+```{r}
+# changing column names 
+web_table <- web_table |> setNames(c("rank", "empty", "name", "number of locations", "total revenue")) 
+
+# dropping empty variable
+web_table$empty <- NULL
+
+View(web_table)
+```
+
+There are a few more functions and ways that allow us to web scrape online, and the reference at the bottom of this document serves as an excellent resource to do so
+
+## 5.4 String Processing (Text Analysis)
+
+We can see how the "number of locations" variable has extra characters that prohibits us from actually turning it into an integer and running any sort of analysis on it. In this case, we need to extract some characters from the variable in order to convert it into an integer. String processing techniques allow us to do just that. The following set of code allows us to to extract specific lines of code and turn them into vectors in order to continue cleaning them to make them into integers. `str_sub` does just this.
+
+```{r}
+# creating objects that extract strings of numbers from the variable of interest
+one <- str_sub(web_table$`number of locations`[1:8], 1, 6)
+one
+two <- str_sub(web_table$`number of locations`[9:66], 1, 5)
+two
+three <- str_sub(web_table$`number of locations`[67:105], 1, 3)
+three
+
+# str_replace allows us to replace a specific character string with another
+# in this case, we are telling R to replace the "," character with nothing, in other words to remove it
+one <- str_replace_all(one, ",", "")
+one <- as.integer(one)
+two <- str_replace_all(two, ",", "")
+two <- as.integer(two)
+three <- str_replace_all(three, ",", "")
+three <- as.integer(three)
+
+four <- c(one, two, three)
+class(four)
+web_table$locations <- four
+
+View(web_table)
+```
+
+## 5.5 Text Analysis using Tweets
+
+This next part of the lesson will focus on additional string processing techniques in order to analyze a different source of text. To reiterate, text analysis can be defined as the process extracting strings (or text) from the internet or other sources for the purpose of analyzing them. To begin, we will use what we learned in the previous lessons to manipulate text coming from a dataset containing tweets from Members of the U.S. 
+
+First, we will import the dataset containing the tweets. 
+
+```{r}
+library(tidyverse)
+# install.packages("lubridate")
+library(lubridate)
+# install.packages("scales")
+library(scales)
+
+# Setting out working directory once more 
+# As a reminder, this will look different for you all as your data will be elsewhere
+setwd("/Volumes/GoogleDrive-115381348121898517757/My Drive/All School Files/USC PHD/Files/Non-Class Material/UCLA Summer Course - Intro to Data Science/Datasets")
+
+# Importing tweets
+tweets <- read.csv("tweets.csv", stringsAsFactors = FALSE)
+
+View(tweets) # opening them on a new tab to visually scan tweets
+
+# We will order our tweets by data so that they can be in chronological order
+tweets <- tweets[order(tweets$year),]
+
+```
+
+Because R stores strings in character vectors, we can access a lot of information about these strings using several commands. The `length` tells R to get the number of items found within the vector, whereas `nchar` can tell us the number of characters found within vector.
+
+```{r}
+# Finding the length of tweets, or total number of tweets in the dataset
+# text contains the actual tweets in the dataframe
+length(tweets$text)
+
+# subsetting works on tweets; here we are asking R to give us the 100th tweet in the dataframe
+tweets$text[100]
+
+# Finding the number of characters total found in tweets 1 through 5 of the dataframe
+nchar(tweets$text[1:5])
+
+# You can also run calculations on this data; here we are finding the mean of the number of tweets
+# You can run several descriptive statistics, such as median, mode, range, sum, max, min etc. as well
+mean(nchar(tweets$text[1:5])) 
+
+# Finding the sum of all tweets specified
+sum(nchar(tweets$text[1:20]))
+
+# Finding the min character amount of all the tweets specified
+min(nchar(tweets$text[1:20]))
+```
+
+A useful tool is the ability to merge text together in order to combine it into one single string object. This can be done using the `paste` command. The `sep` allows us to specify with that character do we want to visually show that this is two strings merged. You can insert any character or leave it blank as well.
+
+```{r}
+paste(tweets$text[1], tweets$text[5], sep='--') # Merging two tweets and using "--" as separator
+```
+
+It is also possible to manipulate text by converting all characters to either lowercase or uppercase. `tolower` and `toupper` does this.
+
+```{r}
+tolower(tweets$text[1:5])
+
+toupper(tweets$text[1:5])
+```
+
+The following function is an alternative to the `str_sub` that we covered in *5.4*. This function, `substr`, asks for the string of interest, then asks for the beginning index (starting from 1), and the final index. 
+
+```{r}
+# "tweets$text[1]" is the character strings of interest
+# "1" is the starting index position of character that we want
+# "2" is the ending index position of character that we want
+substr(tweets$text[1], 1, 2) 
+
+# another example
+substr(tweets$text[1], 1, 10)
+```
+
+This function can be especially useful when working with date strings
+
+```{r}
+dates <- c("2015/01/01", "2014/12/01")
+substr(dates, 1, 4) # years
+substr(dates, 6, 7) # months
+```
+
+We can also search for particular words of interest. This is done so with the `grep` command to identify which tweets contain the word we are looking for. What `grep` does exactly is it returns the index where the word occurs within the dataframe.
+
+```{r}
+# We are looking to find how many tweets have the word vote, from tweets 1 to 100 in the dataframe
+grep('vote', tweets$text[1:100])
+```
+
+`grepl` is similar to `grep` with the exception that instead of returning the index of where the word is, it returns a Boolean condition of `TRUE` or `FALSE`, indicating whether each element of the character vector contains that particular word.
+
+```{r}
+grepl("vote", tweets$text[1:100])
+```
+
+We can also do this with the entire dataset.
+
+```{r}
+# Here, we combine two commands, the "length" and the "grep"
+# As a reminder, "length" gives us the total number of observations
+length(grep('COVID', tweets$text))
+```
+
+It is important to note that matching is case-sensitive, which can either help or hinder your selection. If you want to have a less restrictive search, you can use the `ignore.case` argument to match to a lowercase version.
+
+```{r}
+length(grep('COVID', tweets$text))
+length(grep('COVID', tweets$text, ignore.case = TRUE))
+
+# As we can see in our output, ignoring case-sensitivity gives us 30 extra tweets
+```
+
+As a final tutorial, it is possible to store the tweets of interest into a new object data frame. This can be helpful if you are ever interested in just storing similar text into one smaller data frame for ease of analysis. 
+
+```{r}
+# Storing tweets containing the word covid into a new dataset
+covid_tweets <- tweets[grep('covid', tweets$text, ignore.case=TRUE),]
+```
+
+
+## 5.6 Activity
+
+For today's activity, you will all access the online Pokemon database and extract the table to convert it into a dataset. The website is accessible through this link: https://pokemondb.net/pokedex/all. This can be broken down into the following steps:
+
+  1. Access the website and use your new acquired web scraping techniques to download the table and convert      it into a dataset
+  
+  2. Once you have the dataset, you will see that for the "type" column, there are some Pokemon that have        two types. Create a new variable, "secondary type" that contains all the Pokemon's secondary types.        This can be achieved by extracting those secondary types from the first variable and placing them in       the new one. 
+
+  3. Once this is done, create a plot the shows the frequency of all types across the dataset. Use the previous lessons to do this. 
+  
+  4. Finally, plot the strongest Pokemon per type. Use the "Attack" variable as a measure of strength.
+  
+  

@@ -1,0 +1,315 @@
+---
+title: "Day 1: Intro and R Basics"
+author: "Jose Alcocer"
+output: html_document
+---
+
+## 1.0 Downloading The Programs
+
+For today's lecture, we will begin the class by installing both **R** and its Integrated Development Environment (IDE), **Rstudio.**
+
+If you have R and Rstudio installed already, then you will focus on updating to the latest version, or just sitting back on this small activity.
+
+We will install the latest version of R using the link below: 
+
+https://www.r-project.org
+
+Once there, we will do the following -> Click the _CRAN_ link that is found under **Download** -> Scroll down until you find **USA** section and click on the very first link (https://mirror.las.iastate.edu/CRAN/)-> Under the **Downlaod and Install R**, you will click on your respective section that matches your operating system -> Download and install the latest update of R (**at the time of this markdown, it is R.4.2.1.**)(**For those with M1 macs, be careful to not download the M1 version, as it does not support a lot of packages yet and you will experience crashing; Rosetta for OS X does a great job in running the Intel version of R).
+
+Next, we will move on to download Rstudio using the following link:
+
+https://www.rstudio.com
+
+Once there, we will find the download link and make sure that we download the free version that is pertinent to your machine's operating system. 
+
+It is recommended to install R first followed by R studio always! 
+
+## 1.1 Exploring The Workspace
+  
+  It is important to get familiar with the workspace that RStudio provides for its users.
+  
+  The workspace is divided into four areas that are described below (not in rank order):
+  
+  1. Source Window
+  2. Console Window
+  3. Environment Window
+  4. Help Window
+  
+  The source window is for inserting code.
+  You can also open multiple scripts of code and work seamlessly between them.
+  This is the typical window that showcases one's code that is meant to run commands. 
+  
+  The console window showcases the source window's outputs for any calculation that you make through executing code.
+  You are also able to directly code there and mimic a terminal window from one's own computer.
+  This window also shows you the status of whatever job you execute and allows you to know if you need to troubleshoot.
+  
+  The environment window hosts all the imported datasets that you decide to bring onto the workspace
+  Unlike some other programs (i.e. Stata), R allows you to simultaneously interact with multiple datasets, so long as you have enough local memory (RAM) in your machine.
+  
+  The help window provides access to ones visualization plots, number of packages installed in your program, and allows you to seek help if you find yourself lost with what a certain command does.
+  
+## 1.2 Creating Objects
+
+In programming, an object can be described as a vessel that holds either a value or thing within the workspace.
+
+The objects then can be used for conducting calculations or performing more elaborate commands.
+
+It is important to use objects when programming, as it allows us to maintain a clean script file and it allows us to see a more clear environment when trying to troubleshoot in the case that your code is broken.
+  
+In addition, using objects when programming allows us to become more efficient coders as we are able to streamline calculations if we ever need to apply new values to them for new projects.
+
+Objects can be created using either of the two operators: "<-" or "=".
+
+The following is a chunk of code that shows how to create objects to solve an algebraic expression (the chunk of code can be produced by clicking on the "+c" icon found in the top right of the source window and selecting "R" within Rstudio)
+
+```{r}
+# Chunk of code shows how you can create objects using either operator sign
+x <- 5
+b = 10
+x2 <- 10
+```
+
+We can then call those objects forth by simply typing them out, as they will print within the console the value that was stored within them, as shown below.
+
+```{r}
+x
+b
+x2
+```
+
+With these objects stored, we can also use them to run a range of calculations, from simple to complex ones.
+
+```{r}
+# Exponents
+x^2
+
+# Multiplication
+x*b
+
+# Division
+b/x
+
+# Addition
+x+b
+
+# Subtraction
+b-x
+
+# Solving for y
+y <- 3*x + b
+y
+
+# Solving for another y
+y <- 4*x2 + x - b
+y
+```
+
+
+## 1.3 Data Types
+
+There are several data types that can be stored into objects
+
+It is important to know what these types are in order to properly use them correctly when programming. These are just some data types that exist (not in rank order):
+
+  1. Logical 
+  2. Numeric
+  3. Integer
+  4. Complex
+  5. Character
+  
+The following chunk of code will show how each one can be created and how it can be identified.
+
+```{r}
+# Logical data type in R is known as a Boolean type that can only have either TRUE or FALSE 
+
+# We start by creating the Boolean object
+boolean <- TRUE
+# we then use the class() function to have it show us what it is
+class(boolean)
+
+# Using the same strategy, we move on to the rest
+
+numeric <- 4.44
+class(numeric)
+
+integer <- 444
+class(integer)
+
+complex <- 4 + 3i
+class(complex)
+
+character <- "UCLA"
+class(character)
+```
+
+There are more data types, such as functions and data frames, but for the most part, these are the basic ones that you should be familiar with.
+
+## 1.4 Lists and Data Frames
+
+As mentioned above, objects are variables that store information. Alone they can be used for basic operations, but there is a another data type that can store multiple objects and can be used to perform much more computations. These data structures can be defined as lists. This section will discuss both a general list object and a type of list known as a dataframe.
+
+Starting with a list, a list can be defined as an object containing a collection of several components. These components can consist of different or similar types of data. For example, a list can consist of a a numeric vector, a logical value, a matrix, a complex vector, a character array, and a function. If the goal is to create an object that varies in vector class, length, and structure, then a list is the optimal choice. The following chunk of code shows how to produce a list. You can also see how the list does not need to have the similar structure in its vectors.
+
+```{r}
+# Example of a list
+Class <- list(name = c("John", "Sally", "Tommy","Billy"),
+             student_id = c(1.234,5.678),
+             grades = c(95, 82, 91, 97, 99, 75),
+             final_grade = c("A","B","A","A"))
+
+# The following command allows us to check the documentation of a specific function in R
+# The documentation will appear on the help window pane
+?list()
+
+# we can see the structure of this list 
+Class
+
+# like datasets, we can also use the $ operator to call specific components of a list 
+Class$grades
+
+# you can call upon specific sections of a list using the double bracket feature
+Class[[1]]
+Class[[2]]
+Class[[3]]
+Class[[4]]
+```
+
+Moving on to a dataframe, a dataframe is a type of list classified as a "data.frame" in R. Unlike a list that has hardly any restrictions, the components of a dataframe can only consist of vectors, factors, matrices, other data frames, and must have the same length all around. Unlike a list, a dataframe object mimics a two-dimensional structure, allowing the user to select rows and conduct operations on them. A data frame can be thought of as a table with rows and columns where the rows represent individual observations and columns represent different variables reported for each observation. R has some datasets integrated and the following example will use of them to show some functions that can be used with them.
+
+```{r}
+# This command pulls out all of R's integrated datasets
+data()
+```
+
+```{r}
+# Calling the dataframe we want
+# That being the Smoking, Alcohol and (O)esophageal Cancer dataset
+data("esoph")
+
+# The "head" function allows to see the first 5 observations of the dataset
+head(esoph)
+
+# The "tail" function allows to see the final 5 observations of the dataset
+tail(esoph)
+
+# The View function allows us to see the entire dataset in a new tab 
+View(esoph)
+
+# We can see the data type of a dataset with the following
+class(esoph)
+
+# The "str" function allows us to find out more about the structure of an object 
+# We can see that it contains 88 rows and 5 columns
+str(esoph)
+```
+
+We might sometimes want to access a specific column (or variable) that is found within a dataframe. We can use the accessor operator to do so ($)
+
+```{r}
+esoph$agegp
+
+# If you want to find a quick way of accessing the names of variables you can use the following command
+names(esoph)
+
+```
+
+## 1.5 Measures within datasets
+
+We practiced storing single observations into an object but now we can take a look at objects that store multiple observations, such as a column within a dataset, or a variable. These are called vectors, as they are objects that store multiple entries and have a length of greater than one. We can see how a vector is using one of the variables from the imported data and we can also create our own.
+
+```{r}
+# storing a vector into an object
+age <- esoph$agegp
+
+# length command allows us how many entries are in the vector
+length(age)
+
+# upon examining what type of data is found within the variable of interest, we see that it is a factor
+# factors are useful for storing categorical data 
+class(esoph$agegp)
+
+# we can see how many categorical levels are found within this variable 
+levels(esoph$agegp)
+
+```
+
+
+## 1.6 Sequencing Vectors and Sorting through Datasets
+
+A useful function for creating vectors is sequence generating. Here, you can create a set of integers or values from which you control the start, finish, and in between parameters. You can use this in many occasions where you need to create placeholders or even use within forloops and ifelse statements when creating functions (more on that later). 
+
+```{r}
+# Example of sequences 
+# First argument defines the start, the second defines the end, and the last argument defines the increments
+seq(1,10,2)
+
+# You can store a sequence within a object to also create a vector out of it
+object <- seq(5,100,5)
+object
+```
+
+Using an integrated dataset from R, we can also rank order observations to focus on parameters we want.
+
+```{r}
+data("women") # Calling forth dataset
+head(women)   # Chowing first five observations
+
+sort(women$weight) # Sorting a vector in increasing order 
+```
+
+If we want more information, such as what is the max height of the women in the dataset, you can use the following
+
+```{r}
+max(women$height) # Gives you the max height value
+
+which.max(women$height) # Tells you what observation holds the max height value
+```
+
+## 1.7 Activity
+
+The following activity will cover the culmination of topics covered in this lesson. 
+  
+  1. Use the concatenate "c()" function to create a dataset with the following conditions: 
+  
+    a. 10 patient names (using string characters; ex. "Tommy")
+    b. Their blood types (using string characters; ex. "O")
+    c. Their weights (using integers)
+    d. Their Ages (using integers)
+    
+  I will give a helping hand by starting you off with the code below to make a dataframe
+
+```{r}
+df <- data.frame(v1=c(),
+                 v2=c(),
+                 v3=c(),
+                 v4=c())
+```
+
+  2. Once created the dataset, create an object/vector that stores a single variable from the dataset itself.
+  
+```{r}
+
+
+```
+
+  3. Convert the dataset into a list. 
+  
+```{r}
+
+
+```
+
+  4. Rank order the dataset by age of the patients.
+  
+```{r}
+
+
+```
+  
+
+  5. Create a vector that contains all the positive odd numbers smaller than 100
+
+```{r}
+
+```
+
